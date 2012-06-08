@@ -89,7 +89,7 @@
 				var item = favorList[i];
 				console.log(item);
 				var arr_  = item.split(",");
-				arr.push("<li onclick='playFavor[" + i + ")'>" + arr_[0] + " - " + arr_[1] + "</li>");
+				arr.push("<li onclick='playFavor(" + i + ")'>" + arr_[0] + " - " + arr_[1] + "</li>");
 			}
 			$("#favorlist_ul").html(arr.join(""));
 		}
