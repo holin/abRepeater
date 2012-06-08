@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<title>复读机(HTML5)</title>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script> 
+<style type="text/css">
+	* {margin: 0;padding:0;}
+	body {font-size:14px;color:#777;}
+	div {margin:2px 0;}
+	#container {width:333px;margin:100px auto;}
+	.dragover {background:#94c3e4;}
+	#files {visibility: hidden;position: absolute;}
+	#repeatControl button {width: 80px;padding:0 6px;
+		border:1px solid #f0f0f0;background:#fff;
+		line-height:25px;cursor: pointer;
+	}
+	#favorlist_ul {border:1px solid #f0f0f0;padding:5px 5px;
+		min-height:50px;}
+	#favorlist_ul li {list-style:decimal;cursor: pointer;}
+</style>
+<body>
+	<input type="file" id="files" name="files[]" /> 
+
+	<div id="container">
+		<div id="filename">当前文件：拖动文件或者选择增加</div>
+		<div>
+			<audio id="audioPlayer" controls="controls"> 
+			  Your browser does not support the audio element.
+			</audio>
+			<img width="29px" height="32px" style="cursor:pointer" onclick="$('#files').click()" src="add.png" />
+		</div>
+		<div id="repeatControl">
+			<button onclick="setA()" id="btnAtime">A</button>
+			<button onclick="setB()" id="btnBtime">B</button>
+			<button onclick="clearAb()">清除</button>
+			<button onclick="addFavor()" id="favor"><img src="star_add.png" height="13px" /> 收藏</button>
+		</div>
+		<div>
+			<dl id="favorlist_ul">
+				<span style="color:#ccc;font-size:0.8em">收藏内容列表</span>
+			</dl>
+		</div>
+	</div>
+
+	<script>
+	  function handleFileSelect1(evt) {
+	    var files = evt.target.files; // FileList object
+	    var file = files[0];
+	    console.log(file);
+			openFile(file)
+	  }
+
+	  $('#files').bind('change', handleFileSelect1);
+	</script>
+
+	<script type="text/javascript">
+		var aTime, bTime;
+
+		var favorList = new Array();
+
+		function clearAb() {
+			aTime = 0;
+			bTime = 0;
+			$("#btnAtime").html("A");
+			$("#btnBtime").html("B");
+		}
+
+		function addFavor() {
+			if (bTime < 1) {return;}
+			var arr = new Array();
+			arr.push(aTime);
+			arr.push(bTime);
+			favorList.push(arr.join(","));
+			renderFavorList();
+		}
+
+		function playFavor(i) {
+			var item = favorList[i];
+			var arr_  = item.split(",");
+			aTime = arr_[0];
+			bTime = arr_[1];
+			$("#btnAtime").html("A[" + aTime + "]");
+			$("#btnBtime").html("B[" + bTime + "]");
+			repeatAb();
+		}
+
+		function renderFavorList() {
+			var arr = [];
+			for (var i = 0; i < favorList.length; i++) {
+				var item = favorList[i];
+				console.log(item);
+				var arr_  = item.split(",");
+				arr.push("<li onclick='playFavor[" + i + ")'>" + arr_[0] + " - " + arr_[1] + "</li>");
+			}
+			$("#favorlist_ul").html(arr.join(""));
+		}
+
+		if (window.webkitURL) window.URL = window.webkitURL;
+		function openFile(file) {
+			favorList = new Array();
+			renderFavorList();
+			$("#repeatControl *").attr("disabled", true);
+			clearAb();
+
+			$("#filename").html("当前文件：" + file.fileName); 
+	    // console.log(file);
+			var objectURL = window.URL.createObjectURL(file);
+			console.log(objectURL);
+			myAudio.src = objectURL;  
+			myAudio.play();  
+		}
+
+		function setA() {
+			aTime = parseInt(myAudio.currentTime);
+			$("#btnAtime").html("A[" + aTime + "]");
+		}
+
+		function setB() {
+			bTime = parseInt(myAudio.currentTime);
+			$("#btnBtime").html("B[" + bTime + "]");
+			repeatAb();
+		}
+
+		function repeatAb() {
+			myAudio.pause();
+			myAudio.currentTime = aTime;
+			myAudio.play();
+		}
+
+		function checkRepeat() {
+			if (bTime > 1 && myAudio.currentTime > bTime) {
+				repeatAb();
+			}
+		}
+	</script>
+
+	<script>
+	  function handleFileSelect(evt) {
+	    evt.stopPropagation();
+	    evt.preventDefault();
+
+			$("body").removeClass("dragover");
+
+
+	    var files = evt.dataTransfer.files; // FileList object.
+
+	    var file = files[0];
+			openFile(file);
+	    
+	  }
+
+	  function handleDragOver(evt) {
+	    evt.stopPropagation();
+	    evt.preventDefault();
+	    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+	    $("body").addClass("dragover");
+	  }
+
+	  // Setup the dnd listeners.
+	  var dropZone = document.body;
+	  dropZone.addEventListener('dragover', handleDragOver, false);
+	  dropZone.addEventListener('drop', handleFileSelect, false);
+	</script>
+
+	<script type="text/javascript">
+		var myAudio = $("#audioPlayer").get(0);
+
+		myAudio.addEventListener('canplay', function() {
+	  		$("#repeatControl *").attr("disabled", false);
+		});
+
+		myAudio.addEventListener('timeupdate', function() {
+		    checkRepeat();
+		}, false);
+
+		$("#repeatControl *").attr("disabled", true);
+	</script>
+</body>
+</html>
