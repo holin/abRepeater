@@ -2,26 +2,39 @@
 <html>
 <title>复读机(HTML5)</title>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script> 
+<script type="text/javascript" src="jquery.fancybox-1.3.4.pack.js"></script>
+<link rel="stylesheet" type="text/css" href="jquery.fancybox-1.3.4.css" media="screen" />
 <style type="text/css">
 	* {margin: 0;padding:0;}
-	body {font-size:14px;color:#777;}
-	div {margin:2px 0;}
-	#container {width:333px;margin:100px auto;}
+	body {font-size:14px;color:#777;background:url(bg.png) repeat-x;}
+	#container div {margin:2px 0;}
+	#filename {color:#666;font-weight:bold;text-align:center;}
+	#container {width:333px;margin:100px auto;
+						border:1px solid #88c4e7;padding:5px;
+						-webkit-box-shadow: 1px 1px 5px 4px #b6d9ed;
+						-webkit-border-radius: 5px;border-radius: 5px;
+						box-shadow: 1px 1px 5px 4px #b6d9ed;}
 	.dragover {background:#94c3e4;}
 	#files {visibility: hidden;position: absolute;}
-	#repeatControl button {width: 80px;padding:0 6px;
-		border:1px solid #f0f0f0;background:#fff;
+	#repeatControl button {width: 66px;padding:0 6px;
+		border:1px solid #b6d9ed;background:#fff;
 		line-height:25px;cursor: pointer;
 	}
+	#repeatControl button:hover {background:#339ad6;color:white;}
 	#favorlist_ul {border:1px solid #f0f0f0;padding:5px 5px;
 		min-height:50px;}
 	#favorlist_ul li {list-style:decimal;cursor: pointer;}
+	#tips {
+		float: right;
+	}
+	#tips li { font-size:0.8em;}
+	#tips li a {color:#888;text-decoration:none;} 
 </style>
-<body>
+<body> 
 	<input type="file" id="files" name="files[]" /> 
 
 	<div id="container">
-		<div id="filename">当前文件：拖动文件或者选择增加</div>
+		<div id="filename">拖拽文件或者选择增加文件</div>
 		<div>
 			<audio id="audioPlayer" controls="controls"> 
 			  Your browser does not support the audio element.
@@ -29,12 +42,22 @@
 			<img width="29px" height="32px" style="cursor:pointer" onclick="$('#files').click()" src="add.png" />
 		</div>
 		<div id="repeatControl">
+			<img src="pre.png" onclick="preA()" />
 			<button onclick="setA()" id="btnAtime">A</button>
+			<img src="next.png" onclick="nextA()" />
+			<img src="pre.png" onclick="preB()" />
 			<button onclick="setB()" id="btnBtime">B</button>
+			<img src="next.png" onclick="nextB()" />
 			<button onclick="clearAb()">清除</button>
 			<button onclick="addFavor()" id="favor"><img src="star_add.png" height="13px" /> 收藏</button>
 		</div>
 		<div>
+			<div id="tips">
+				<dl>
+					<li><a href="how.png" class="how">如何使用？</a></li>
+					<li><a href="http://t.qq.com/holinhe" target="_blank">@holinhe</a></li>
+				</dl>
+			</div>
 			<dl id="favorlist_ul">
 				<span style="color:#ccc;font-size:0.8em">收藏内容列表</span>
 			</dl>
@@ -42,6 +65,10 @@
 	</div>
 
 	<script>
+		$(function(){
+			$("a.how").fancybox();
+		});
+
 	  function handleFileSelect1(evt) {
 	    var files = evt.target.files; // FileList object
 	    var file = files[0];
@@ -53,7 +80,8 @@
 	</script>
 
 	<script type="text/javascript">
-		var aTime, bTime;
+		var aTime = 0;
+		var bTime = 0;
 
 		var favorList = new Array();
 
@@ -63,6 +91,30 @@
 			$("#btnAtime").html("A");
 			$("#btnBtime").html("B");
 		}
+
+		function preA() {
+			if (aTime < 1) {return};
+			aTime -= 1; 
+			$("#btnAtime").html("A[" + aTime + "]");
+		}
+
+		function preB() {
+			if (bTime < 1) {return};
+			bTime -= 1; 
+			$("#btnBtime").html("B[" + bTime + "]");
+		}
+
+		function nextA() {
+			aTime += 1; 
+			$("#btnAtime").html("B[" + aTime + "]");
+		}
+
+		function nextB() {
+			if (bTime < 1) {return};
+			bTime += 1; 
+			$("#btnBtime").html("B[" + bTime + "]");
+		}
+ 
 
 		function addFavor() {
 			if (bTime < 1) {return;}
@@ -87,7 +139,7 @@
 			var arr = [];
 			for (var i = 0; i < favorList.length; i++) {
 				var item = favorList[i];
-				console.log(item);
+				// console.log(item);
 				var arr_  = item.split(",");
 				arr.push("<li onclick='playFavor(" + i + ")'>" + arr_[0] + " - " + arr_[1] + "</li>");
 			}
@@ -101,7 +153,7 @@
 			$("#repeatControl *").attr("disabled", true);
 			clearAb();
 
-			$("#filename").html("当前文件：" + file.fileName); 
+			$("#filename").html("" + file.fileName); 
 	    // console.log(file);
 			var objectURL = window.URL.createObjectURL(file);
 			console.log(objectURL);
